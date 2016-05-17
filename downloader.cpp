@@ -1,16 +1,32 @@
 #include "downloader.h"
 
+//QFile outputFile;
+
 Downloader::Downloader(QObject *parent) : QObject(parent)
 {
     // Инициализируем менеджер ...
     manager = new QNetworkAccessManager();
-
     // ... и подключаем сигнал о завершении получения данных к обработчику полученного ответа
     connect(manager, &QNetworkAccessManager::finished, this, &Downloader::onResult);
 
+   // Создание выходного файла
+   QDate dateToday = QDate::currentDate();
+   QString str_date = dateToday.toString("d_M_yy");
+   QString m_FileO;
+   m_FileO.append(str_date);
+   m_FileO.append(".log");
 
-    //p_File.append ("E:/home/file.xml");
-   // p_File.append ("/home/bat/file.xml");
+   outputFile.setFileName(m_FileO);
+   if(outputFile.open(QIODevice::Append | QIODevice::Text))
+       {
+           QTextStream out(&outputFile);
+           out.setCodec("UTF-8");          // Установка кодека
+           //out << "Thomas M. Disch: " << 334 << endl;
+
+       }
+
+       outputFile.close();
+
 
 
 }
@@ -37,16 +53,14 @@ void Downloader::onResult(QNetworkReply *reply)
     if(reply->error()){
         // Сообщаем об этом и показываем информацию об ошибках
         qDebug() << "ERROR";
-        qDebug() << reply->errorString();
+    //    qDebug() << reply->errorString();
     } else {
 
         int pos = 0;
         int pos1 = 0;
-    //    QStringList result;
-        QString tTitle;    // Структура title_info
         QString r_Text;
         QString r_Itog;
-        QFile filefb2;
+
 
         r_Text.append (";");
         r_Text.append ("\"");
@@ -64,19 +78,26 @@ void Downloader::onResult(QNetworkReply *reply)
 
             if (textTitle.cap(1)!= "0")
             {
-            //qDebug()<<" - "<<textTitle.cap(1);
                 if (textTitle_n.cap(1)!= "0")
                 {
-                //qDebug()<<textTitle_n.cap(1);
                     r_Itog.append (textTitle_n.cap(1));
                     r_Itog.append (" - ");
                     r_Itog.append (textTitle.cap(1));
+                    r_Itog.append("\n");
                     cout  << r_Itog.toStdString() << endl;
-                    qDebug()<<r_Itog;
-
+                 if (outputFile.open(QIODevice::Append | QIODevice::Text))
+                 {
+                  QTextStream writeStream(&outputFile); // Создаем объект класса QTextStream
+                  writeStream << r_Itog; // Посылаем строку в поток для записи
+                  outputFile.flush();
+                 }
                 }
             }
 
+            if (outputFile.isOpen())
+            {
+                      outputFile.close(); // Закрываем файл   qDebug()<<r_Itog;
+            }
         delete reply;
         emit onReady(); // Посылаем сигнал о завершении получения файла
 

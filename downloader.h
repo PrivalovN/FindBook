@@ -31,11 +31,13 @@ public slots:
     void slotReadyRead();
 
 
+
 private:
     QNetworkAccessManager *manager; // менеджер сетевого доступа
     QString s_Find;
     QString p_File;
     QNetworkReply *reply;
+    QFile outputFile;
 };
 
 #endif // DOWNLOADER_H
